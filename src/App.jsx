@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { Github, Mail, ExternalLink, ChevronDown, Code2, Database, Server, Globe, Menu, X, ArrowUpRight } from "lucide-react";
-import { TbBrandLeetcode } from "react-icons/tb";
 
 const useInView = (threshold = 0.15) => {
   const ref = useRef(null);
@@ -97,7 +96,16 @@ export default function Portfolio() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const scrollTo = (id) => { document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); };
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [menuOpen]);
+
+  const scrollTo = (id) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    setMenuOpen(false);
+  };
 
   return (
     <div style={{ background: "#0a0a0f", color: "#e8e6f0", fontFamily: "'Nunito', sans-serif", minHeight: "100vh", overflowX: "hidden" }}>
@@ -114,14 +122,14 @@ export default function Portfolio() {
         .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
         .skill-chip { border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 12px 16px; text-align: center; transition: border-color 0.3s, transform 0.3s; cursor: default; }
         .skill-chip:hover { border-color: rgba(168,85,247,0.5); transform: translateY(-4px); }
-        .project-card { background: #13121e; border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 28px; transition: border-color 0.3s, transform 0.3s; }
+        .project-card { background: #13121e; border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 28px; transition: border-color 0.3s, transform 0.3s; height: 100%; }
         .project-card:hover { border-color: rgba(168,85,247,0.3); transform: translateY(-6px); }
         .tag { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(168,85,247,0.3); color: #a855f7; letter-spacing: 0.05em; background: rgba(168,85,247,0.07); }
         .form-input { width: 100%; background: #13121e; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 13px 16px; color: #e8e6f0; font-family: inherit; font-size: 14px; outline: none; transition: border-color 0.2s; }
         .form-input:focus { border-color: rgba(168,85,247,0.5); }
         .form-input::placeholder { color: #4e4a6a; }
         textarea.form-input { resize: none; }
-        .accent-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #a855f7; margin-right: 8px; }
+        .accent-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #a855f7; margin-right: 8px; flex-shrink: 0; }
         .section-label { font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #a855f7; display: flex; align-items: center; margin-bottom: 16px; }
         .glow { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; }
         .hero-name { font-family: 'Poppins', sans-serif; font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; }
@@ -132,7 +140,32 @@ export default function Portfolio() {
         @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
         .cursor { animation: blink 1s step-end infinite; }
         .grid-bg { background-image: linear-gradient(rgba(124,58,237,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(124,58,237,0.03) 1px, transparent 1px); background-size: 48px 48px; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Mobile menu */
+        .mobile-menu { position: fixed; inset: 0; top: 64px; background: rgba(10,10,15,0.98); backdrop-filter: blur(20px); z-index: 99; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 40px; animation: slideDown 0.25s ease; }
+        .mobile-nav-link { font-size: 24px; font-weight: 600; color: #9991b5; cursor: pointer; transition: color 0.2s; letter-spacing: 0.04em; text-transform: uppercase; padding: 8px 0; }
+        .mobile-nav-link:hover { color: #e8e6f0; }
+
+        /* Responsive breakpoints */
+        @media (max-width: 768px) {
+          .desktop-nav { display: none !important; }
+          .hero-stats { flex-direction: row !important; }
+          .about-grid { grid-template-columns: 1fr 1fr !important; }
+          .contact-name-email { grid-template-columns: 1fr !important; }
+          .footer-inner { flex-direction: column; align-items: center; text-align: center; gap: 16px; }
+          .skill-grid { grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)) !important; }
+        }
+        @media (min-width: 769px) {
+          .hamburger-btn { display: none !important; }
+        }
+        @media (max-width: 480px) {
+          .hero-stats { flex-direction: row !important; }
+          .hero-cta { flex-direction: column; width: 100%; }
+          .hero-cta button { width: 100%; text-align: center; justify-content: center; }
+          .projects-grid { grid-template-columns: 1fr !important; }
+        }
       `}</style>
 
       {/* NAV */}
@@ -145,18 +178,38 @@ export default function Portfolio() {
         transition: "all 0.3s",
         display: "flex", alignItems: "center", justifyContent: "space-between", height: "64px"
       }}>
-        <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: 20, color: "#a855f7" }}>
-          S
-        </span>
-        <div style={{ display: "flex", gap: 36 }} className="hidden md:flex">
+        <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: 20, color: "#a855f7" }}>S</span>
+
+        {/* Desktop nav */}
+        <div className="desktop-nav" style={{ display: "flex", gap: 36 }}>
           {["about", "work", "contact"].map(s => (
             <span key={s} className="nav-link" onClick={() => scrollTo(s)}>{s}</span>
           ))}
         </div>
-        <button className="btn-primary" style={{ padding: "8px 20px", fontSize: 13 }} onClick={() => scrollTo("contact")}>
-          Hire me
-        </button>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <button className="btn-primary" style={{ padding: "8px 20px", fontSize: 13 }} onClick={() => scrollTo("contact")}>
+            Hire me
+          </button>
+          {/* Hamburger */}
+          <button
+            className="hamburger-btn"
+            onClick={() => setMenuOpen(o => !o)}
+            style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#9991b5", padding: 0 }}
+          >
+            {menuOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
+        </div>
       </nav>
+
+      {/* Mobile menu overlay */}
+      {menuOpen && (
+        <div className="mobile-menu">
+          {["about", "work", "contact"].map(s => (
+            <span key={s} className="mobile-nav-link" onClick={() => scrollTo(s)}>{s}</span>
+          ))}
+        </div>
+      )}
 
       {/* HERO */}
       <section style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", padding: "80px 5% 60px" }} className="grid-bg">
@@ -172,23 +225,23 @@ export default function Portfolio() {
             <span style={{ fontSize: 13, color: "#9991b5", fontWeight: 500, letterSpacing: "0.06em" }}>AVAILABLE FOR WORK</span>
           </div>
 
-          <h1 className="hero-name" style={{ fontSize: "clamp(48px, 9vw, 90px)", color: "#e8e6f0", opacity: 0, animation: "fadeUp 0.7s 0.2s forwards" }}>
+          <h1 className="hero-name" style={{ fontSize: "clamp(42px, 9vw, 90px)", color: "#e8e6f0", opacity: 0, animation: "fadeUp 0.7s 0.2s forwards" }}>
             Hi, I'm<br />
             <span style={{ background: "linear-gradient(135deg, #c084fc, #818cf8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Sumit</span>
           </h1>
 
           <div style={{ height: 36, display: "flex", alignItems: "center", opacity: 0, animation: "fadeUp 0.7s 0.35s forwards" }}>
-            <span style={{ fontSize: "clamp(16px, 2.5vw, 22px)", color: "#9991b5", fontWeight: 400 }}>
+            <span style={{ fontSize: "clamp(15px, 2.5vw, 22px)", color: "#9991b5", fontWeight: 400 }}>
               <span style={{ color: "#a855f7", opacity: roleVisible ? 1 : 0, transition: "opacity 0.4s", fontWeight: 600 }}>{roles[roleIdx]}</span>
               <span className="cursor" style={{ color: "#a855f7", marginLeft: 2 }}>|</span>
             </span>
           </div>
 
-          <p style={{ fontSize: 16, color: "#706a92", lineHeight: 1.75, maxWidth: 540, opacity: 0, animation: "fadeUp 0.7s 0.45s forwards" }}>
+          <p style={{ fontSize: "clamp(14px, 2vw, 16px)", color: "#706a92", lineHeight: 1.75, maxWidth: 540, opacity: 0, animation: "fadeUp 0.7s 0.45s forwards" }}>
             I build full-stack web applications with the MERN stack — scalable, performant, and user-friendly. Let's turn your ideas into reality.
           </p>
 
-          <div style={{ display: "flex", gap: 14, flexWrap: "wrap", opacity: 0, animation: "fadeUp 0.7s 0.55s forwards" }}>
+          <div className="hero-cta" style={{ display: "flex", gap: 14, flexWrap: "wrap", opacity: 0, animation: "fadeUp 0.7s 0.55s forwards" }}>
             <button className="btn-primary" onClick={() => scrollTo("work")}>View my work</button>
             <button style={{ background: "transparent", border: "1px solid rgba(168,85,247,0.3)", color: "#a855f7", padding: "12px 24px", borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "background 0.2s" }}
               onClick={() => scrollTo("contact")}>
@@ -197,69 +250,62 @@ export default function Portfolio() {
           </div>
 
           <div style={{ display: "flex", gap: 16, opacity: 0, animation: "fadeUp 0.7s 0.65s forwards" }}>
-            <a href="https://github.com/sumit8104608630" target="_blank" rel="noopener noreferrer" style={{ width: 40, height: 40, borderRadius: 8, border: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "border-color 0.2s, background 0.2s", background: "transparent", textDecoration: "none" }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(168,85,247,0.5)"; e.currentTarget.style.background = "rgba(168,85,247,0.08)"; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.background = "transparent"; }}>
-              <Github size={16} color="#9991b5" />
-            </a>
-            <a href="https://www.linkedin.com/in/sumit-sharma-204842223/" target="_blank" rel="noopener noreferrer" style={{ width: 40, height: 40, borderRadius: 8, border: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "border-color 0.2s, background 0.2s", background: "transparent", textDecoration: "none" }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(168,85,247,0.5)"; e.currentTarget.style.background = "rgba(168,85,247,0.08)"; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.background = "transparent"; }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="#9991b5"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-            </a>
-            <a href="https://leetcode.com/u/sumit81046/" target="_blank" rel="noopener noreferrer" style={{ width: 40, height: 40, borderRadius: 8, border: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "border-color 0.2s, background 0.2s", background: "transparent", textDecoration: "none" }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(168,85,247,0.5)"; e.currentTarget.style.background = "rgba(168,85,247,0.08)"; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.background = "transparent"; }}>
-              <TbBrandLeetcode size={16} color="#9991b5" />
-            </a>
+            {[
+              { href: "https://github.com/sumit8104608630", icon: <Github size={16} color="#9991b5" /> },
+              { href: "https://www.linkedin.com/in/sumit-sharma-204842223/", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="#9991b5"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg> },
+              { href: "https://leetcode.com/u/sumit81046/", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="#9991b5"><path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z"/></svg> },
+            ].map(({ href, icon }, i) => (
+              <a key={i} href={href} target="_blank" rel="noopener noreferrer"
+                style={{ width: 40, height: 40, borderRadius: 8, border: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "border-color 0.2s, background 0.2s", background: "transparent", textDecoration: "none" }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(168,85,247,0.5)"; e.currentTarget.style.background = "rgba(168,85,247,0.08)"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.background = "transparent"; }}>
+                {icon}
+              </a>
+            ))}
           </div>
         </div>
 
         <div style={{ position: "absolute", bottom: 32, left: "50%", transform: "translateX(-50%)", opacity: 0, animation: "fadeUp 0.7s 0.9s forwards" }} className="floating">
           <ChevronDown size={20} color="#4e4a6a" />
         </div>
-
-        <style>{`
-          @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        `}</style>
       </section>
 
       {/* ABOUT / SKILLS */}
-      <section id="about" style={{ padding: "100px 5%", position: "relative", overflow: "hidden" }}>
+      <section id="about" style={{ padding: "80px 5%", position: "relative", overflow: "hidden" }}>
         <div className="glow" style={{ width: 400, height: 400, background: "rgba(124,58,237,0.07)", top: "50%", right: "-5%" }} />
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
           <FadeIn>
             <span className="section-label"><span className="accent-dot" />About me</span>
           </FadeIn>
           <FadeIn delay={0.1}>
-            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: "clamp(28px, 4vw, 42px)", lineHeight: 1.2, marginBottom: 24, color: "#e8e6f0" }}>
+            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: "clamp(24px, 4vw, 42px)", lineHeight: 1.2, marginBottom: 24, color: "#e8e6f0" }}>
               Building the web,<br />one stack at a time
             </h2>
           </FadeIn>
           <FadeIn delay={0.2}>
-            <p style={{ fontSize: 15, color: "#706a92", lineHeight: 1.85, maxWidth: 620, marginBottom: 40 }}>
+            <p style={{ fontSize: "clamp(14px, 2vw, 15px)", color: "#706a92", lineHeight: 1.85, maxWidth: 620, marginBottom: 40 }}>
               I'm a skilled MERN Stack Developer with experience in building full-stack web applications. I specialize in JavaScript and have expertise in frameworks like React, Node.js, and Express, along with MongoDB for database management. I'm a quick learner and collaborate closely with clients to create efficient, scalable, and user-friendly solutions that solve real-world problems.
             </p>
           </FadeIn>
 
           <FadeIn delay={0.3}>
-            <div style={{ display: "flex", gap: 32, flexWrap: "wrap", marginBottom: 60 }}>
-              <a href="https://leetcode.com/u/sumit81046/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", padding: "16px 24px", background: "#13121e", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, textAlign: "center", transition: "border-color 0.3s, transform 0.3s" }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(168,85,247,0.5)"; e.currentTarget.style.transform = "translateY(-4px)"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; e.currentTarget.style.transform = "translateY(0)"; }}>
-                <div style={{ fontSize: 28, fontWeight: 800, color: "#a855f7", fontFamily: "'Poppins', sans-serif" }}>325+</div>
-                <div style={{ fontSize: 12, color: "#706a92", marginTop: 4 }}>Problems Solved</div>
-              </a>
-              <a href="https://github.com/sumit8104608630" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", padding: "16px 24px", background: "#13121e", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, textAlign: "center", transition: "border-color 0.3s, transform 0.3s" }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(168,85,247,0.5)"; e.currentTarget.style.transform = "translateY(-4px)"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; e.currentTarget.style.transform = "translateY(0)"; }}>
-                <div style={{ fontSize: 28, fontWeight: 800, color: "#a855f7", fontFamily: "'Poppins', sans-serif" }}>65+</div>
-                <div style={{ fontSize: 12, color: "#706a92", marginTop: 4 }}>GitHub Repos</div>
-              </a>
+            <div className="hero-stats" style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 48 }}>
+              {[
+                { href: "https://leetcode.com/u/sumit81046/", value: "325+", label: "Problems Solved" },
+                { href: "https://github.com/sumit8104608630", value: "65+", label: "GitHub Repos" },
+              ].map(({ href, value, label }) => (
+                <a key={label} href={href} target="_blank" rel="noopener noreferrer"
+                  style={{ textDecoration: "none", padding: "16px 24px", background: "#13121e", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, textAlign: "center", transition: "border-color 0.3s, transform 0.3s", flex: "1 1 120px" }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(168,85,247,0.5)"; e.currentTarget.style.transform = "translateY(-4px)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; e.currentTarget.style.transform = "translateY(0)"; }}>
+                  <div style={{ fontSize: 28, fontWeight: 800, color: "#a855f7", fontFamily: "'Poppins', sans-serif" }}>{value}</div>
+                  <div style={{ fontSize: 12, color: "#706a92", marginTop: 4 }}>{label}</div>
+                </a>
+              ))}
             </div>
           </FadeIn>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 20, marginBottom: 60, maxWidth: 480 }}>
+          <div className="about-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16, marginBottom: 60 }}>
             {[
               { icon: <Code2 size={18} color="#a855f7" />, title: "Frontend", desc: "React, Tailwind, Three.js" },
               { icon: <Server size={18} color="#a855f7" />, title: "Backend", desc: "Node.js, Express.js" },
@@ -279,7 +325,7 @@ export default function Portfolio() {
           <FadeIn delay={0.1}>
             <span className="section-label"><span className="accent-dot" />Tech stack</span>
           </FadeIn>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))", gap: 12 }}>
+          <div className="skill-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))", gap: 12 }}>
             {skills.map((skill, i) => (
               <FadeIn key={skill.name} delay={0.04 * i}>
                 <div className="skill-chip" style={{ background: "#13121e" }}>
@@ -293,28 +339,28 @@ export default function Portfolio() {
       </section>
 
       {/* PROJECTS */}
-      <section id="work" style={{ padding: "100px 5%", background: "#0d0c17", position: "relative", overflow: "hidden" }}>
+      <section id="work" style={{ padding: "80px 5%", background: "#0d0c17", position: "relative", overflow: "hidden" }}>
         <div className="glow" style={{ width: 500, height: 300, background: "rgba(124,58,237,0.06)", top: 0, left: "30%" }} />
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
           <FadeIn>
             <span className="section-label"><span className="accent-dot" />Projects</span>
           </FadeIn>
           <FadeIn delay={0.1}>
-            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: "clamp(28px, 4vw, 42px)", lineHeight: 1.2, marginBottom: 16, color: "#e8e6f0" }}>
+            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: "clamp(24px, 4vw, 42px)", lineHeight: 1.2, marginBottom: 16, color: "#e8e6f0" }}>
               Things I've built
             </h2>
           </FadeIn>
           <FadeIn delay={0.2}>
-            <p style={{ fontSize: 15, color: "#706a92", lineHeight: 1.75, maxWidth: 560, marginBottom: 60 }}>
+            <p style={{ fontSize: "clamp(14px, 2vw, 15px)", color: "#706a92", lineHeight: 1.75, maxWidth: 560, marginBottom: 48 }}>
               Real-world projects that showcase problem-solving, technical depth, and my ability to ship end-to-end products.
             </p>
           </FadeIn>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 20 }}>
+          <div className="projects-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 }}>
             {projects.map((p, i) => (
               <FadeIn key={p.title} delay={0.15 * i} direction={i % 2 === 0 ? "left" : "right"}>
-                <a href={p.link} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", display: "block" }}>
-                  <div className="project-card" style={{ height: "100%" }}>
+                <a href={p.link} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", display: "block", height: "100%" }}>
+                  <div className="project-card">
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
                       <div style={{ width: 48, height: 48, borderRadius: 12, background: `${p.accent}18`, border: `1px solid ${p.accent}30`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>
                         {p.icon}
@@ -335,26 +381,26 @@ export default function Portfolio() {
       </section>
 
       {/* CONTACT */}
-      <section id="contact" style={{ padding: "100px 5%", position: "relative", overflow: "hidden" }}>
+      <section id="contact" style={{ padding: "80px 5%", position: "relative", overflow: "hidden" }}>
         <div className="glow" style={{ width: 400, height: 400, background: "rgba(124,58,237,0.09)", bottom: 0, left: "50%", transform: "translateX(-50%)" }} />
         <div style={{ maxWidth: 600, margin: "0 auto" }}>
           <FadeIn>
             <span className="section-label" style={{ justifyContent: "center" }}><span className="accent-dot" />Contact</span>
           </FadeIn>
           <FadeIn delay={0.1}>
-            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: "clamp(28px, 4vw, 42px)", lineHeight: 1.2, marginBottom: 16, color: "#e8e6f0", textAlign: "center" }}>
+            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: "clamp(24px, 4vw, 42px)", lineHeight: 1.2, marginBottom: 16, color: "#e8e6f0", textAlign: "center" }}>
               Let's work together
             </h2>
           </FadeIn>
           <FadeIn delay={0.2}>
-            <p style={{ fontSize: 15, color: "#706a92", lineHeight: 1.75, textAlign: "center", marginBottom: 48 }}>
+            <p style={{ fontSize: "clamp(14px, 2vw, 15px)", color: "#706a92", lineHeight: 1.75, textAlign: "center", marginBottom: 40 }}>
               Have a project in mind? I'd love to hear about it. Send me a message and let's create something great.
             </p>
           </FadeIn>
 
           <FadeIn delay={0.3}>
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+              <div className="contact-name-email" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
                 <input className="form-input" placeholder="Your name" value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} />
                 <input className="form-input" placeholder="Your email" type="email" value={formData.email} onChange={e => setFormData(p => ({ ...p, email: e.target.value }))} />
               </div>
@@ -370,13 +416,18 @@ export default function Portfolio() {
       </section>
 
       {/* FOOTER */}
-      <footer style={{ borderTop: "1px solid rgba(255,255,255,0.05)", padding: "28px 5%", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-        <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 18 }}>S<span style={{ color: "#a855f7" }}>.</span></span>
-        <span style={{ fontSize: 13, color: "#4e4a6a" }}>© 2025 Sumit · Built with React & Tailwind</span>
-        <div style={{ display: "flex", gap: 16 }}>
-          {[Github, Mail].map((Icon, i) => (
-            <Icon key={i} size={16} color="#4e4a6a" style={{ cursor: "pointer" }} />
-          ))}
+      <footer style={{ borderTop: "1px solid rgba(255,255,255,0.05)", padding: "28px 5%" }}>
+        <div className="footer-inner" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 18 }}>S<span style={{ color: "#a855f7" }}>.</span></span>
+          <span style={{ fontSize: 13, color: "#4e4a6a" }}>© 2025 Sumit · Built with React & Tailwind</span>
+          <div style={{ display: "flex", gap: 16 }}>
+            <a href="https://github.com/sumit8104608630" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
+              <Github size={16} color="#4e4a6a" style={{ cursor: "pointer" }} />
+            </a>
+            <a href="mailto:" style={{ textDecoration: "none" }}>
+              <Mail size={16} color="#4e4a6a" style={{ cursor: "pointer" }} />
+            </a>
+          </div>
         </div>
       </footer>
     </div>
